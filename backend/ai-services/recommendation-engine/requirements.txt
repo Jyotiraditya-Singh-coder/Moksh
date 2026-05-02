@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+scikit-surprise
+pandas
+joblib
+numpy
+pydantic
+mlflow

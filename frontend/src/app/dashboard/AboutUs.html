@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Cognitive OS</title>
+    <meta name="description" content="Meet the team behind Cognitive OS — a neuroscience-inspired learning platform built to map, track, and accelerate your cognitive growth.">
+    <link rel="stylesheet" href="Dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        #three-canvas-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            background: var(--bg-color);
+            transition: background 0.3s;
+        }
+
+        .page-content {
+            padding: 100px 20px 40px !important;
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 5;
+        }
+
+        @media (max-width: 1400px) {
+            .page-content {
+                padding: 100px 20px 40px !important;
+            }
+            .knowledge-sidebar {
+                position: static;
+                width: 100%;
+                margin: 20px 0;
+            }
+            .page-content {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        /* ── Hero Section ── */
+        .about-hero {
+            text-align: center;
+            padding: 60px 20px 40px;
+            position: relative;
+        }
+        .about-hero .hero-eyebrow {
+            font-size: 0.85em;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--primary-glow);
+            margin-bottom: 16px;
+            opacity: 0;
+            animation: fadeSlideUp 0.6s ease 0.2s forwards;
+        }
+        .about-hero h1 {
+            font-size: clamp(2.2em, 5vw, 3.8em);
+            font-weight: 700;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #e0e6ff 30%, #a200ff 80%, #00d4ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+            animation: fadeSlideUp 0.6s ease 0.35s forwards;
+        }
+        .about-hero p {
+            font-size: 1.15em;
+            color: #c0c8e0;
+            max-width: 620px;
+            margin: 0 auto 40px;
+            line-height: 1.8;
+            opacity: 0;
+            animation: fadeSlideUp 0.6s ease 0.5s forwards;
+        }
+
+        /* ── Stats Row ── */
+        .stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 60px;
+            opacity: 0;
+            animation: fadeSlideUp 0.6s ease 0.65s forwards;
+        }
+        .stat-chip {
+            background: rgba(162, 0, 255, 0.12);
+            border: 1px solid rgba(162, 0, 255, 0.4);
+            border-radius: 100px;
+            padding: 10px 24px;
+            font-size: 0.95em;
+            font-weight: 500;
+            color: var(--text-color);
+            backdrop-filter: blur(10px);
+            transition: transform 0.25s, box-shadow 0.25s;
+        }
+        .stat-chip:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(162, 0, 255, 0.35);
+        }
+        .stat-chip strong {
+            color: #a200ff;
+            margin-right: 6px;
+        }
+
+        /* ── Section Titles ── */
+        .section-label {
+            font-size: 0.8em;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #00d4ff;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: clamp(1.6em, 3vw, 2.4em);
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(90deg, #e0e6ff, #a200ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ── Mission Cards ── */
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 24px;
+            margin-bottom: 70px;
+            justify-content: center;
+        }
+        .mission-card {
+            background: rgba(20, 20, 40, 0.65);
+            border: 1px solid rgba(162, 0, 255, 0.25);
+            border-radius: 20px;
+            padding: 32px 28px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .mission-card::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 160px; height: 160px;
+            background: radial-gradient(circle, rgba(162, 0, 255, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .mission-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(162, 0, 255, 0.25);
+            border-color: rgba(162, 0, 255, 0.6);
+        }
+        .mission-card .card-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+        }
+        .mission-card .card-icon.purple { background: rgba(162, 0, 255, 0.2); }
+        .mission-card .card-icon.cyan   { background: rgba(0, 212, 255, 0.2); }
+        .mission-card .card-icon.green  { background: rgba(76, 175, 80, 0.2); }
+        .mission-card .card-icon.orange { background: rgba(255, 152, 0, 0.2); }
+        .mission-card h3 {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+            color: #e0e6ff;
+        }
+        .mission-card p {
+            color: #aab0cc;
+            line-height: 1.7;
+            font-size: 0.96em;
+        }
+
+        /* ── Team Section ── */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 28px;
+            margin-bottom: 70px;
+            justify-content: center;
+        }
+        .team-card {
+            background: rgba(20, 20, 40, 0.65);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 32px 20px 24px;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .team-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(162,0,255,0.05), transparent 60%);
+            pointer-events: none;
+        }
+        .team-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 24px 50px rgba(162, 0, 255, 0.3);
+            border-color: rgba(162, 0, 255, 0.5);
+        }
+        .team-avatar {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            border: 3px solid var(--primary-glow);
+            box-shadow: 0 0 20px rgba(162, 0, 255, 0.45);
+            margin: 0 auto 16px;
+            object-fit: cover;
+            display: block;
+        }
+        .team-card h3 {
+            font-size: 1.1em;
+            color: #e0e6ff;
+            margin-bottom: 6px;
+        }
+        .team-card .team-role {
+            font-size: 0.82em;
+            color: #a200ff;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+        .team-card p {
+            font-size: 0.88em;
+            color: #9aa0bb;
+            line-height: 1.6;
+        }
+        .team-socials {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+        .team-socials a {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: rgba(162,0,255,0.15);
+            border: 1px solid rgba(162,0,255,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #c0c8e0;
+            text-decoration: none;
+            transition: background 0.25s, transform 0.25s;
+        }
+        .team-socials a:hover {
+            background: rgba(162,0,255,0.4);
+            transform: translateY(-2px);
+        }
+
+        /* ── Timeline / Story ── */
+        .timeline {
+            position: relative;
+            padding: 0 0 40px;
+            margin: 0 auto 70px;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .timeline::before {
+            display: none;
+        }
+        .timeline-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 24px;
+            position: relative;
+            width: 100%;
+            justify-content: center;
+            flex-direction: column !important;
+        }
+        .timeline-item:nth-child(even) {
+            flex-direction: column !important;
+        }
+        .tl-dot {
+            position: static;
+            transform: none;
+            margin-bottom: 12px;
+            width: 20px;
+            height: 20px;
+            box-shadow: 0 0 20px rgba(162, 0, 255, 1);
+        }
+        .tl-content {
+            width: 100%;
+            max-width: 600px !important;
+            text-align: center !important;
+            background: rgba(20,20,40,0.65);
+            border: 1px solid rgba(162,0,255,0.2);
+            border-radius: 14px;
+            padding: 20px 24px;
+            backdrop-filter: blur(12px);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .tl-content:hover {
+            border-color: rgba(162,0,255,0.5);
+            box-shadow: 0 10px 30px rgba(162,0,255,0.2);
+        }
+        .tl-year {
+            font-size: 0.8em;
+            color: #00d4ff;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .tl-content h3 { font-size: 1.1em; color: #e0e6ff; margin-bottom: 8px; }
+        .tl-content p  { font-size: 0.9em; color: #9aa0bb; line-height: 1.6; }
+
+        /* ── CTA Banner ── */
+        .cta-banner {
+            background: linear-gradient(135deg, rgba(162,0,255,0.18), rgba(0,212,255,0.12));
+            border: 1px solid rgba(162,0,255,0.4);
+            border-radius: 24px;
+            padding: 60px 40px;
+            text-align: center;
+            backdrop-filter: blur(14px);
+            margin-bottom: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-banner::before {
+            content: '';
+            position: absolute;
+            top: -80px; left: 50%;
+            transform: translateX(-50%);
+            width: 400px; height: 200px;
+            background: radial-gradient(ellipse, rgba(162,0,255,0.2), transparent 70%);
+            pointer-events: none;
+        }
+        .cta-banner h2 {
+            font-size: clamp(1.6em, 3vw, 2.4em);
+            background: linear-gradient(90deg, #e0e6ff, #a200ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+        .cta-banner p {
+            color: #aab0cc;
+            max-width: 480px;
+            margin: 0 auto 32px;
+            line-height: 1.7;
+        }
+        .cta-btn {
+            display: inline-block;
+            padding: 14px 36px;
+            background: linear-gradient(135deg, #a200ff, #00d4ff);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1em;
+            transition: transform 0.25s, box-shadow 0.25s;
+            box-shadow: 0 6px 24px rgba(162,0,255,0.4);
+        }
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 36px rgba(162,0,255,0.6);
+        }
+
+        /* ── Responsive mobile timeline ── */
+        @media (max-width: 700px) {
+            .timeline::before { left: 20px; }
+            .tl-dot { left: 20px; }
+            .timeline-item,
+            .timeline-item:nth-child(even) { flex-direction: column; align-items: flex-start; padding-left: 50px; }
+            .tl-content,
+            .timeline-item:nth-child(even) .tl-content { max-width: 100%; text-align: left; }
+        }
+
+        /* ── Entrance animations ── */
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .animate-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 2x2 Challenges Grid */
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto 70px;
+        }
+
+        @media (max-width: 800px) {
+            .challenges-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Centered Features Grid (Flexbox) */
+        .features-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+            max-width: 1000px;
+            margin: 0 auto 70px;
+        }
+        .features-grid .mission-card {
+            flex: 0 1 300px; /* Fixed base size, don't grow too much */
+            min-height: 280px;
+        }
+
+        @media (max-width: 700px) {
+            .features-grid .mission-card {
+                flex: 1 1 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Transition Overlay -->
+    <div class="page-transition-overlay" id="page-transition"></div>
+
+    <!-- 3D Brain Background -->
+    <div id="three-canvas-container"></div>
+
+    <!-- ── Top Navigation ── -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <button class="hamburger-btn" id="hamburger-btn">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <div class="brand">Cognitive OS</div>
+        </div>
+        <div class="nav-center">
+            <div class="search-wrapper">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" placeholder="Search neural pathways...">
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="icon-btn">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+            </button>
+            <div class="user-profile" id="user-profile-trigger">
+                <img src="https://ui-avatars.com/api/?name=User&background=a200ff&color=fff" alt="Profile" id="top-nav-avatar">
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profile-dropdown">
+                    <div class="dropdown-header">
+                        <div class="user-info">
+                            <span class="user-name" id="dropdown-user-name">User</span>
+                        </div>
+                        <a href="Settings.html" class="edit-profile-link">Edit profile</a>
+                    </div>
+                    <ul class="dropdown-menu">
+                        <li><a href="Dashboard.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg> Dashboard</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 3v18h18"></path><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path></svg> My Progress</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg> League</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> Bookmarks</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> Certificates</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> Spaces</a></li>
+                        <hr>
+                        <li><a href="Settings.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg> Billing</a></li>
+                        <li><a href="#" class="logout-link"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Log out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── Main Sidebar ── -->
+    <nav class="main-sidebar" id="main-sidebar">
+        <ul class="sidebar-links">
+            <li>
+                <a href="Dashboard.html">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                        <path d="M2 12h20"></path>
+                    </svg> Brain Map
+                </a>
+            </li>
+            <li>
+                <a href="CompletedTasks.html">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                        <polyline points="9 11 12 14 22 4"></polyline>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg> Tasks
+                </a>
+            </li>
+            <li>
+                <a href="#">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M3 3v18h18"></path>
+                        <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path>
+                    </svg> Analytics
+                </a>
+            </li>
+            <li>
+                <a href="AboutUs.html" class="active">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg> About Us
+                </a>
+            </li>
+            <li>
+                <a href="Settings.html">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg> Settings
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Sidebar listing all elements -->
+    <div class="knowledge-sidebar">
+        <h2>Knowledge Hub</h2>
+        <ul id="knowledge-list">
+            <!-- List items will be dynamically inserted here -->
+        </ul>
+    </div>
+
+    <!-- ── Page Content ── -->
+    <main class="page-content">
+
+        <!-- Hero -->
+        <section class="about-hero">
+            <p class="hero-eyebrow">Bridging the Gap</p>
+            <h1>Transforming Education with<br>Artificial Intelligence</h1>
+            <p>Our goal is to ensure that every student receives the right guidance, at the right time, in the right way. We use AI to create a personalized, adaptive, and intelligent learning ecosystem.</p>
+            <div class="stats-row">
+                <div class="stat-chip"><strong>SDG 4</strong> Quality Education</div>
+                <div class="stat-chip"><strong>AI-Powered</strong> Personalized Paths</div>
+                <div class="stat-chip"><strong>ML Models</strong> Risk Prediction</div>
+                <div class="stat-chip"><strong>Voice AI</strong> Multilingual Tutor</div>
+            </div>
+        </section>
+
+        <!-- Problem Section -->
+        <div class="animate-in">
+            <p class="section-label">The Challenges</p>
+            <h2 class="section-title">The Problems We Aim to Solve</h2>
+        </div>
+        <div class="challenges-grid animate-in">
+            <div class="mission-card">
+                <div class="card-icon purple">⚖️</div>
+                <h3>Lack of Personalization</h3>
+                <p>Most systems follow a standardized approach, leaving slower learners struggling while advanced learners remain under-challenged.</p>
+            </div>
+            <div class="mission-card">
+                <div class="card-icon cyan">🔍</div>
+                <h3>Hidden Academic Struggles</h3>
+                <p>Learning difficulties often go unnoticed until performance drops. We identify these struggles early to prevent failure.</p>
+            </div>
+            <div class="mission-card">
+                <div class="card-icon green">💼</div>
+                <h3>Skill Gap</h3>
+                <p>Many students graduate without the skills required in the modern workforce, lacking guidance on how to achieve their career goals.</p>
+            </div>
+            <div class="mission-card">
+                <div class="card-icon orange">👩‍🏫</div>
+                <h3>Limited Resources</h3>
+                <p>Large classrooms make it difficult for teachers to provide the personalized attention every student deserves.</p>
+            </div>
+        </div>
+
+        <!-- Our Solution Header -->
+        <div class="animate-in" style="text-align: center; margin-bottom: 60px;">
+            <p class="section-label">Our Solution</p>
+            <h2 class="section-title">An Intelligent Learning Ecosystem</h2>
+            <p style="max-width: 800px; margin: 0 auto; color: #aab0cc; line-height: 1.8;">We developed an AI-powered Education Intelligence Platform that continuously monitors performance, identifies strengths, and generates adaptive recommendations tailored to each student’s goals.</p>
+        </div>
+
+        <!-- Key Features -->
+        <div class="animate-in">
+            <p class="section-label">Key Features</p>
+            <h2 class="section-title">Unleashing Potential</h2>
+        </div>
+        <div class="features-grid animate-in">
+            <div class="mission-card">
+                <div class="card-icon purple">📝</div>
+                <h3>Daily Challenges</h3>
+                <p>LLM-generated questions tailored to your weaknesses with step-by-step explanations and strategy tips.</p>
+            </div>
+            <div class="mission-card">
+                <div class="card-icon cyan">📉</div>
+                <h3>Dropout Prediction</h3>
+                <p>Identifying students at risk using engagement data, allowing institutions to provide timely support.</p>
+            </div>
+            <div class="mission-card">
+                <div class="card-icon green">🗺️</div>
+                <h3>Skill Gap Analyzer</h3>
+                <p>Upload your resume and get a personalized career roadmap highlighting missing skills and projects.</p>
+            </div>
+            <div class="mission-card">
+                <div class="card-icon orange">🎤</div>
+                <h3>Voice Tutor</h3>
+                <p>A multilingual AI tutor that processes voice queries and provides conversational explanations.</p>
+            </div>
+            <div class="mission-card">
+                <div class="card-icon purple">📊</div>
+                <h3>Analytics Dashboard</h3>
+                <p>Visualize topic mastery, weak areas, and daily streaks through an intelligent data interface.</p>
+            </div>
+        </div>
+
+        <!-- How it Works / System Flow -->
+        <div class="animate-in">
+            <p class="section-label">The Process</p>
+            <h2 class="section-title">How the System Works</h2>
+        </div>
+        <div class="timeline animate-in">
+            <div class="timeline-item">
+                <div class="tl-dot"></div>
+                <div class="tl-content">
+                    <div class="tl-year">Step 01</div>
+                    <h3>Data Collection</h3>
+                    <p>The system gathers interactions from quizzes, study activities, and daily challenges.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="tl-dot"></div>
+                <div class="tl-content">
+                    <div class="tl-year">Step 02</div>
+                    <h3>Pattern Analysis</h3>
+                    <p>Machine learning models detect patterns related to performance, engagement, and mastery.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="tl-dot"></div>
+                <div class="tl-content">
+                    <div class="tl-year">Step 03</div>
+                    <h3>AI Generation</h3>
+                    <p>Large language models generate personalized content, explanations, and learning strategies.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="tl-dot"></div>
+                <div class="tl-content">
+                    <div class="tl-year">Step 04</div>
+                    <h3>Actionable Insights</h3>
+                    <p>Insights are delivered through visual dashboards, creating a continuous improvement cycle.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Impact / Mission -->
+        <section class="cta-banner animate-in">
+            <div class="section-label" style="color: #fff; margin-bottom: 20px;">Our Mission</div>
+            <h2 style="font-size: 2.2em; margin-bottom: 20px;">Quality Education for All</h2>
+            <p>Our platform supports the UN Sustainable Development Goal of Quality Education (SDG 4) by making learning more inclusive, adaptive, and effective globally.</p>
+            
+            <div style="margin-top: 40px; display: flex; flex-direction: column; gap: 30px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px;">
+                <div>
+                    <h3 style="color: #fff; margin-bottom: 10px;">Get in Touch</h3>
+                    <p style="margin-bottom: 5px;">📞 +91 98765 43210</p>
+                    <p>📧 contact@edunexai.com</p>
+                </div>
+                <a href="Dashboard.html" class="cta-btn">Start Learning Now →</a>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // ── PAGE TRANSITIONS ──
+        document.addEventListener('DOMContentLoaded', () => {
+            const transitionOverlay = document.getElementById('page-transition');
+            setTimeout(() => transitionOverlay.classList.add('fade-out'), 100);
+
+            // Intersection Observer for scroll-in animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.12 });
+
+            document.querySelectorAll('.animate-in').forEach(el => observer.observe(el));
+        });
+
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && link.href && link.getAttribute('href').endsWith('.html')) {
+                e.preventDefault();
+                const targetUrl = link.getAttribute('href');
+                const transitionOverlay = document.getElementById('page-transition');
+                transitionOverlay.classList.remove('fade-out');
+                setTimeout(() => { window.location.href = targetUrl; }, 500);
+            }
+        });
+
+        // --- GLOBAL AVATAR SYNC ---
+        function generateInitialsAvatarUrl(firstName, lastName) {
+            const fullName = `${(firstName || '').trim()} ${(lastName || '').trim()}`.trim();
+            if(!fullName) return `https://ui-avatars.com/api/?name=System+User&background=a200ff&color=fff&bold=true`;
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=a200ff&color=fff&bold=true`;
+        }
+
+        function loadGlobalAvatar() {
+            const avatarImg = document.getElementById('top-nav-avatar');
+            const dropdownName = document.getElementById('dropdown-user-name');
+            if (!avatarImg) return;
+
+            const savedAvatar = localStorage.getItem('userAvatar');
+            const firstName = localStorage.getItem('firstName');
+            const lastName = localStorage.getItem('lastName');
+
+            if (savedAvatar) {
+                avatarImg.src = savedAvatar;
+            } else if (firstName || lastName) {
+                avatarImg.src = generateInitialsAvatarUrl(firstName, lastName);
+            }
+
+            if (dropdownName) {
+                dropdownName.textContent = `${(firstName || '').trim()} ${(lastName || '').trim()}`.trim() || 'User';
+            }
+        }
+        loadGlobalAvatar();
+
+        // --- PROFILE DROPDOWN LOGIC ---
+        const profileTrigger = document.getElementById('user-profile-trigger');
+        const profileDropdown = document.getElementById('profile-dropdown');
+
+        if (profileTrigger && profileDropdown) {
+            profileTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!profileTrigger.contains(e.target)) {
+                    profileDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // ── SIDEBAR ──
+        const hamburgerBtn  = document.getElementById('hamburger-btn');
+        const mainSidebar   = document.getElementById('main-sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        function toggleSidebar() {
+            mainSidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('open');
+        }
+        hamburgerBtn.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        // --- KNOWLEDGE HUB LOGIC ---
+        const knowledgeDataHub = {
+            nodes: [
+                { id: 'brain_map', name: 'Brain Map (Active)', mastery: 'strong', url: 'Dashboard.html' },
+                { id: 'tasks', name: 'Tasks', mastery: 'weak', url: 'CompletedTasks.html' },
+                { id: 'analytics', name: 'Analytics', mastery: 'unexplored', url: '#' },
+                { id: 'settings', name: 'Settings', mastery: 'strong', url: 'Settings.html' },
+            ]
+        };
+
+        const HUB_COLORS = {
+            strong: '#4caf50',
+            weak: '#f44336',
+            unexplored: '#9e9e9e'
+        };
+
+        function initKnowledgeHub() {
+            const listContainer = document.getElementById('knowledge-list');
+            if (!listContainer) return;
+            
+            knowledgeDataHub.nodes.forEach(node => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${node.name}</span>
+                    <span class="dot-indicator" style="background-color: ${HUB_COLORS[node.mastery]}"></span>
+                `;
+                li.addEventListener('click', () => {
+                    if (node.url !== '#') {
+                         window.location.href = node.url;
+                    }
+                });
+                listContainer.appendChild(li);
+            });
+        }
+        initKnowledgeHub();
+
+        // ── 3D BRAIN BACKGROUND (same as Dashboard / Tasks) ──
+        (function initThreeJS() {
+            const container = document.getElementById('three-canvas-container');
+            if (!container) return;
+
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x0a0a1a, 0.1);
+
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 14;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 3;
+            controls.maxDistance = 20;
+
+            // Lights
+            scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+            const pointLight = new THREE.PointLight(0xa200ff, 1, 100);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
+            scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
+            const rimLight = new THREE.SpotLight(0x00d4ff, 2);
+            rimLight.position.set(0, 10, -10);
+            rimLight.angle = Math.PI / 4;
+            rimLight.penumbra = 0.5;
+            scene.add(rimLight);
+
+            const brainGroup = new THREE.Group();
+            scene.add(brainGroup);
+
+            function deformToBrain(vec) {
+                vec.z *= 1.25;
+                if (vec.y > -1.0) {
+                    const fissure = Math.exp(-(vec.x * vec.x) / 0.8);
+                    vec.y -= fissure * 1.5;
+                    vec.x += (vec.x > 0 ? 1 : (vec.x < 0 ? -1 : 0)) * fissure * 0.4;
+                }
+                const temporalBulge = Math.exp(-((vec.y + 0.5) * (vec.y + 0.5) + vec.z * vec.z) / 3.0);
+                vec.x += (vec.x > 0 ? 1 : -1) * temporalBulge * 0.5;
+                if (vec.y < 0) vec.y *= 0.7;
+                if (vec.z < 0) vec.x *= 1.1;
+                if (vec.z > 0) vec.x *= 0.9;
+                const f1 = 2.5, f2 = 5.1, f3 = 8.3;
+                let noise = Math.sin(vec.x * f1 + vec.z) * Math.cos(vec.y * f1 + vec.x) * Math.sin(vec.z * f1 + vec.y);
+                noise += 0.5 * Math.sin(vec.x * f2 - vec.y) * Math.cos(vec.y * f2 + vec.z);
+                noise += 0.25 * Math.sin(vec.x * f3) * Math.cos(vec.z * f3);
+                vec.multiplyScalar(1 - Math.abs(noise) * 0.12);
+            }
+
+            // Brain Shell
+            const geo = new THREE.SphereGeometry(6, 200, 200);
+            const pos = geo.attributes.position;
+            const v = new THREE.Vector3();
+            for (let i = 0; i < pos.count; i++) {
+                v.fromBufferAttribute(pos, i);
+                deformToBrain(v);
+                pos.setXYZ(i, v.x, v.y, v.z);
+            }
+            geo.computeVertexNormals();
+            const mat = new THREE.MeshPhysicalMaterial({
+                color: 0xd8b4fe, emissive: 0x220044, emissiveIntensity: 0.5,
+                transparent: true, opacity: 0.85, depthWrite: false,
+                roughness: 0.2, metalness: 0.2, transmission: 0.9,
+                ior: 1.45, thickness: 2.0, clearcoat: 1.0, clearcoatRoughness: 0.1
+            });
+            brainGroup.add(new THREE.Mesh(geo, mat));
+
+            // Particles
+            const particleData = [];
+            const pCount = 800;
+            const pPositions = new Float32Array(pCount * 3);
+            const pGeo = new THREE.BufferGeometry();
+            for (let i = 0; i < pCount; i++) {
+                particleData.push({
+                    theta: Math.random() * Math.PI * 2,
+                    phi: Math.acos((Math.random() * 2) - 1),
+                    speed: 0.002 + Math.random() * 0.005
+                });
+            }
+            pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+            const pMesh = new THREE.Points(pGeo, new THREE.PointsMaterial({
+                color: 0xe0e6ff, size: 0.06, transparent: true, opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            }));
+            brainGroup.add(pMesh);
+
+            const clock = new THREE.Clock();
+            (function animate() {
+                requestAnimationFrame(animate);
+                const t = clock.getElapsedTime();
+                brainGroup.rotation.y += 0.002;
+                brainGroup.position.y = Math.sin(t * 1.5) * 0.2;
+
+                const posArr = pMesh.geometry.attributes.position.array;
+                const pv = new THREE.Vector3();
+                for (let i = 0; i < particleData.length; i++) {
+                    const d = particleData[i];
+                    d.theta += d.speed;
+                    pv.setFromSphericalCoords(6.15, d.phi, d.theta);
+                    deformToBrain(pv);
+                    posArr[i * 3] = pv.x;
+                    posArr[i * 3 + 1] = pv.y;
+                    posArr[i * 3 + 2] = pv.z;
+                }
+                pMesh.geometry.attributes.position.needsUpdate = true;
+
+                controls.update();
+                renderer.render(scene, camera);
+            })();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multilingual Voice Tutor - Dashboard</title>
+    <link rel="stylesheet" href="Dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        #three-canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--bg-color);
+            transition: background 0.3s;
+        }
+
+        .page-content {
+            padding: 100px 20px 40px !important;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 5;
+        }
+
+        @media (max-width: 1400px) {
+            .page-content {
+                padding: 100px 20px 40px !important;
+            }
+            .knowledge-sidebar {
+                position: static;
+                width: 100%;
+                margin: 20px 0;
+            }
+            .page-content {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Transition Overlay -->
+    <div class="page-transition-overlay" id="page-transition"></div>
+
+    <div id="three-canvas-container"></div>
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <button class="hamburger-btn" id="hamburger-btn">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <div class="brand">EduNex AI</div>
+        </div>
+        <div class="nav-center">
+            <div class="search-wrapper">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" placeholder="Search tasks...">
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="icon-btn"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+            <div class="user-profile" id="user-profile-trigger">
+                <img src="https://ui-avatars.com/api/?name=User&background=a200ff&color=fff" alt="Profile" id="top-nav-avatar">
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profile-dropdown">
+                    <div class="dropdown-header">
+                        <div class="user-info">
+                            <span class="user-name" id="dropdown-user-name">User</span>
+                        </div>
+                        <a href="Settings.html" class="edit-profile-link">Edit profile</a>
+                    </div>
+                    <ul class="dropdown-menu">
+                        <li><a href="Dashboard.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg> Dashboard</a></li>
+                        <li><a href="ProgressReport.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 3v18h18"></path><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path></svg> My Progress</a></li>
+                        <li><a href="ProgressReport.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg> League</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> Bookmarks</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> Certificates</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> Spaces</a></li>
+                        <hr>
+                        <li><a href="Settings.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg> Billing</a></li>
+                        <li><a href="#" class="logout-link"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Log out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Sidebar -->
+    <nav class="main-sidebar" id="main-sidebar">
+        <ul class="sidebar-links">
+            <li><a href="Dashboard.html"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg> Brain Map</a></li>
+            <li><a href="#" class="active"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg> Tasks</a></li>
+            <li><a href="ProgressReport.html"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 3v18h18"></path><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path></svg> Analytics</a></li>
+            <li><a href="AboutUs.html"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> About Us</a></li>
+            <li><a href="Settings.html"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Settings</a></li>
+        </ul>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Sidebar listing all elements -->
+    <div class="knowledge-sidebar">
+        <div class="kh-header">
+            <h2 class="kh-title-text">Knowledge Hub</h2>
+            <button id="kh-toggle-btn" onclick="toggleKnowledgeHub()" title="Toggle Knowledge Hub">
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
+        </div>
+        <ul id="knowledge-list">
+            <!-- List items will be dynamically inserted here -->
+        </ul>
+    </div>
+
+    <main class="page-content">
+<div class="glass-panel" style="padding: 40px; text-align: center; margin-top: 50px;">
+<h1 style="color: var(--primary-glow); margin-bottom: 20px;">Multilingual Voice Tutor</h1>
+<p style="color: var(--text-color); font-size: 1.2rem;">This module is under active construction. Experiencing Multilingual Voice Tutor. Please check back later.</p>
+</div>
+</main>
+
+    <script>
+        // --- PAGE TRANSITIONS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const transitionOverlay = document.getElementById('page-transition');
+            setTimeout(() => {
+                transitionOverlay.classList.add('fade-out');
+            }, 100);
+        });
+
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            // Intercept internal links ending in .html
+            if (link && link.href && link.getAttribute('href').endsWith('.html')) {
+                e.preventDefault();
+                const targetUrl = link.getAttribute('href');
+                const transitionOverlay = document.getElementById('page-transition');
+                transitionOverlay.classList.remove('fade-out'); // Fade in
+                
+                setTimeout(() => {
+                    window.location.href = targetUrl;
+                }, 500); // Wait for transition before navigating
+            }
+        });
+
+        // --- GLOBAL AVATAR SYNC ---
+        function generateInitialsAvatarUrl(firstName, lastName) {
+            const fullName = `${(firstName || '').trim()} ${(lastName || '').trim()}`.trim();
+            if(!fullName) return `https://ui-avatars.com/api/?name=System+User&background=a200ff&color=fff&bold=true`;
+            return `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=a200ff&color=fff&bold=true`;
+        }
+
+        function loadGlobalAvatar() {
+            const avatarImg = document.getElementById('top-nav-avatar');
+            const dropdownName = document.getElementById('dropdown-user-name');
+            if (!avatarImg) return;
+
+            const savedAvatar = localStorage.getItem('userAvatar');
+            const firstName = localStorage.getItem('firstName');
+            const lastName = localStorage.getItem('lastName');
+
+            if (savedAvatar) {
+                avatarImg.src = savedAvatar;
+            } else if (firstName || lastName) {
+                avatarImg.src = generateInitialsAvatarUrl(firstName, lastName);
+            }
+
+            if (dropdownName) {
+                dropdownName.textContent = `${(firstName || '').trim()} ${(lastName || '').trim()}`.trim() || 'User';
+            }
+        }
+        loadGlobalAvatar();
+
+        // --- PROFILE DROPDOWN LOGIC ---
+        const profileTrigger = document.getElementById('user-profile-trigger');
+        const profileDropdown = document.getElementById('profile-dropdown');
+
+        if (profileTrigger && profileDropdown) {
+            profileTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                profileDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!profileTrigger.contains(e.target)) {
+                    profileDropdown.classList.remove('show');
+                }
+            });
+        }
+
+        // --- UI LOGIC ---
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mainSidebar = document.getElementById('main-sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        function toggleSidebar() {
+            mainSidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('open');
+        }
+        hamburgerBtn.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        // Load completed tasks
+                function loadCompletedTasks() {
+            let completedTasks = JSON.parse(localStorage.getItem('completedTasks') || '[]');
+            
+            // Seed default AI tasks if empty
+            if (completedTasks.length === 0) {
+                completedTasks = [
+                    { title: 'Collaboration Engine Setup', desc: 'Initialize AI group formation logic.' },
+                    { title: 'Dropout Model Training', desc: 'Train predictive analytics on student datasets.' },
+                    { title: 'DSA Trainer Launch', desc: 'Activate interactive coding mentorship.' },
+                    { title: 'Voice Tutor Integration', desc: 'Synthesize conversational AI speech patterns.' }
+                ];
+                localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+            }
+
+            const container = document.getElementById('completed-container');
+            container.innerHTML = '';
+            
+            if (completedTasks.length === 0) {
+                container.innerHTML = '<p>No completed tasks yet.</p>';
+                return;
+            }
+            
+            completedTasks.forEach(task => {
+                const taskCard = document.createElement('div');
+                taskCard.className = 'task-card';
+                taskCard.innerHTML = `
+                    <h3>${task.title}</h3>
+                    <p>${task.desc}</p>
+                    <span class="status completed">Completed</span>
+                    <div class="tooltip-text">
+                        <strong>Task Details</strong><br>
+                        ${task.desc}<br><br>
+                        <em>Status: 100% Completed</em>
+                    </div>
+                `;
+                container.appendChild(taskCard);
+            });
+        }
+
+        // Load tasks on page load
+        loadCompletedTasks();
+
+        // --- KNOWLEDGE HUB LOGIC ---
+                        const knowledgeDataHub = {
+            nodes: [
+                { id: 'brain_map', name: 'EduNex Core', mastery: 'strong', url: 'Dashboard.html' },
+                { id: 'collaboration', name: 'Collaboration Engine', mastery: 'strong', url: '#' },
+                { id: 'content', name: 'Content Authoring', mastery: 'weak', url: '#' },
+                { id: 'dropout', name: 'Dropout Model', mastery: 'unexplored', url: '#' },
+                { id: 'dsa', name: 'DSA Trainer', mastery: 'weak', url: '#' },
+                { id: 'explanation', name: 'Explanation Generator', mastery: 'strong', url: '#' },
+                { id: 'optimization', name: 'Optimization Engine', mastery: 'strong', url: '#' },
+                { id: 'quant', name: 'Quant Mentor', mastery: 'unexplored', url: '#' },
+                { id: 'question', name: 'Question Engine', mastery: 'strong', url: '#' },
+                { id: 'recommendation', name: 'Recommendation Engine', mastery: 'weak', url: '#' },
+                { id: 'scraper', name: 'Resource Scraper', mastery: 'unexplored', url: '#' },
+                { id: 'skill_gap', name: 'Skill Gap Analyzer', mastery: 'strong', url: '#' },
+                { id: 'skill_nav', name: 'Skill Navigator', mastery: 'weak', url: '#' },
+                { id: 'subject', name: 'Subject Training Engine', mastery: 'strong', url: '#' },
+                { id: 'voice', name: 'Voice Tutor', mastery: 'unexplored', url: '#' }
+            ]
+        };
+
+        const HUB_COLORS = {
+            strong: '#4caf50',
+            weak: '#f44336',
+            unexplored: '#9e9e9e'
+        };
+
+        function initKnowledgeHub() {
+            const listContainer = document.getElementById('knowledge-list');
+            if (!listContainer) return;
+            
+            knowledgeDataHub.nodes.forEach(node => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <span>${node.name}</span>
+                    <span class="dot-indicator" style="background-color: ${HUB_COLORS[node.mastery]}"></span>
+                `;
+                li.addEventListener('click', () => {
+                    if (node.url !== '#') {
+                         window.location.href = node.url;
+                    }
+                });
+                listContainer.appendChild(li);
+            });
+        }
+        initKnowledgeHub();
+
+        // Three.js 3D Item Initialization
+        function initThreeJS() {
+            const container = document.getElementById('three-canvas-container');
+            if (!container) return;
+
+            container.innerHTML = ''; // Clear existing
+
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x0a0a1a, 0.1);
+
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 14;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 3;
+            controls.maxDistance = 20;
+
+            // Add lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+            const pointLight = new THREE.PointLight(0xa200ff, 1, 100);
+            pointLight.position.set(5, 5, 5);
+            scene.add(pointLight);
+            const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5);
+            scene.add(hemiLight);
+            const rimLight = new THREE.SpotLight(0x00d4ff, 2);
+            rimLight.position.set(0, 10, -10);
+            rimLight.angle = Math.PI / 4;
+            rimLight.penumbra = 0.5;
+            scene.add(rimLight);
+
+            const brainGroup = new THREE.Group();
+            scene.add(brainGroup);
+
+            function deformToBrain(vec) {
+                vec.z *= 1.25;
+                if (vec.y > -1.0) {
+                    const fissure = Math.exp(-(vec.x * vec.x) / 0.8); 
+                    vec.y -= fissure * 1.5; 
+                    vec.x += (vec.x > 0 ? 1 : (vec.x < 0 ? -1 : 0)) * fissure * 0.4;
+                }
+                const temporalBulge = Math.exp(-((vec.y + 0.5)*(vec.y + 0.5) + (vec.z)*(vec.z)) / 3.0);
+                vec.x += (vec.x > 0 ? 1 : -1) * temporalBulge * 0.5;
+                if (vec.y < 0) vec.y *= 0.7;
+                if (vec.z < 0) vec.x *= 1.1;
+                if (vec.z > 0) vec.x *= 0.9;
+                const f1 = 2.5, f2 = 5.1, f3 = 8.3;
+                let noise = Math.sin(vec.x * f1 + vec.z) * Math.cos(vec.y * f1 + vec.x) * Math.sin(vec.z * f1 + vec.y);
+                noise += 0.5 * Math.sin(vec.x * f2 - vec.y) * Math.cos(vec.y * f2 + vec.z);
+                noise += 0.25 * Math.sin(vec.x * f3) * Math.cos(vec.z * f3);
+                const foldDepth = 0.12;
+                const folds = 1 - Math.abs(noise) * foldDepth;
+                vec.multiplyScalar(folds);
+            }
+
+            // Create Brain Shell
+            const geometry = new THREE.SphereGeometry(6, 200, 200);
+            const pos = geometry.attributes.position;
+            const vec = new THREE.Vector3();
+            for(let i = 0; i < pos.count; i++) {
+                vec.fromBufferAttribute(pos, i);
+                deformToBrain(vec);
+                pos.setXYZ(i, vec.x, vec.y, vec.z);
+            }
+            geometry.computeVertexNormals();
+
+            const volumeMat = new THREE.MeshPhysicalMaterial({
+                color: 0xd8b4fe,
+                emissive: 0x220044,
+                emissiveIntensity: 0.5,
+                transparent: true,
+                opacity: 0.85,
+                depthWrite: false,
+                roughness: 0.2,
+                metalness: 0.2,
+                transmission: 0.9,
+                ior: 1.45,
+                thickness: 2.0,
+                clearcoat: 1.0,
+                clearcoatRoughness: 0.1,
+                wireframe: false
+            });
+            const brainVolume = new THREE.Mesh(geometry, volumeMat);
+            brainGroup.add(brainVolume);
+
+            // Create Flowing Particles
+            const particleData = [];
+            const particlesCount = 800;
+            const positions = new Float32Array(particlesCount * 3);
+            const pGeometry = new THREE.BufferGeometry();
+
+            for (let i = 0; i < particlesCount; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos((Math.random() * 2) - 1);
+                const speed = 0.002 + Math.random() * 0.005;
+                particleData.push({ theta, phi, speed });
+            }
+            pGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const pMaterial = new THREE.PointsMaterial({
+                color: 0xe0e6ff,
+                size: 0.06,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            const particlesMesh = new THREE.Points(pGeometry, pMaterial);
+            brainGroup.add(particlesMesh);
+
+            // Graph Data & Logic to match Dashboard.html background
+                        const knowledgeData = {
+                nodes: [
+                    { id: 'brain_map', name: 'EduNex Core', mastery: 'strong', isRoot: true },
+                    { id: 'collaboration', name: 'Collaboration Engine', mastery: 'strong' },
+                    { id: 'content', name: 'Content Authoring', mastery: 'weak' },
+                    { id: 'dropout', name: 'Dropout Model', mastery: 'unexplored' },
+                    { id: 'dsa', name: 'DSA Trainer', mastery: 'weak' },
+                    { id: 'explanation', name: 'Explanation Generator', mastery: 'strong' },
+                    { id: 'optimization', name: 'Optimization Engine', mastery: 'strong' },
+                    { id: 'quant', name: 'Quant Mentor', mastery: 'unexplored' },
+                    { id: 'question', name: 'Question Engine', mastery: 'strong' },
+                    { id: 'recommendation', name: 'Recommendation Engine', mastery: 'weak' },
+                    { id: 'scraper', name: 'Resource Scraper', mastery: 'unexplored' },
+                    { id: 'skill_gap', name: 'Skill Gap Analyzer', mastery: 'strong' },
+                    { id: 'skill_nav', name: 'Skill Navigator', mastery: 'weak' },
+                    { id: 'subject', name: 'Subject Training Engine', mastery: 'strong' },
+                    { id: 'voice', name: 'Voice Tutor', mastery: 'unexplored' }
+                ],
+                links: [
+                    { source: 'brain_map', target: 'collaboration' },
+                    { source: 'brain_map', target: 'content' },
+                    { source: 'brain_map', target: 'dropout' },
+                    { source: 'brain_map', target: 'dsa' },
+                    { source: 'brain_map', target: 'explanation' },
+                    { source: 'brain_map', target: 'optimization' },
+                    { source: 'brain_map', target: 'quant' },
+                    { source: 'brain_map', target: 'question' },
+                    { source: 'brain_map', target: 'recommendation' },
+                    { source: 'brain_map', target: 'scraper' },
+                    { source: 'brain_map', target: 'skill_gap' },
+                    { source: 'brain_map', target: 'skill_nav' },
+                    { source: 'brain_map', target: 'subject' },
+                    { source: 'brain_map', target: 'voice' }
+                ]
+            };
+
+            const COLORS = {
+                strong: new THREE.Color('#4caf50'),
+                weak: new THREE.Color('#f44336'),
+                unexplored: new THREE.Color('#9e9e9e'),
+                line: new THREE.Color('#ffffff')
+            };
+            const SIZES = { strong: 0.3, weak: 0.2, unexplored: 0.15, root: 0.4 };
+            const dailyFocusNodeId = 'brain_map';
+
+            let nodes = {}, lines = {};
+            let focusPulses = [];
+
+            function createGraph() {
+                const nodeMaterial = (color) => new THREE.MeshPhysicalMaterial({
+                    color: color, roughness: 0.15, metalness: 0.8, emissive: color, emissiveIntensity: 0.5, clearcoat: 1.0, clearcoatRoughness: 0.2
+                });
+
+                knowledgeData.nodes.forEach((nodeData, i) => {
+                    const size = nodeData.isRoot ? SIZES.root : SIZES[nodeData.mastery] || 0.2;
+                    const geometry = new THREE.SphereGeometry(size, 32, 32);
+                    const material = nodeMaterial(COLORS[nodeData.mastery]);
+                    const sphere = new THREE.Mesh(geometry, material);
+
+                    if (nodeData.isRoot) {
+                        sphere.position.set(0, 0, 0); // Root is dead center
+                    } else {
+                        const radius = 2 + Math.random() * 3.5; 
+                        const phi = Math.acos(-1 + (2 * i) / knowledgeData.nodes.length);
+                        const theta = Math.sqrt(knowledgeData.nodes.length * Math.PI) * phi;
+                        sphere.position.setFromSphericalCoords(radius, phi, theta);
+                        deformToBrain(sphere.position); // Fit them into the brain lobes
+                    }
+                    
+                    brainGroup.add(sphere);
+                    nodes[nodeData.id] = sphere;
+                });
+
+                knowledgeData.links.forEach(linkData => {
+                    const sourceNode = nodes[linkData.source];
+                    const targetNode = nodes[linkData.target];
+                    if (!sourceNode || !targetNode) return;
+
+                    const material = new THREE.LineDashedMaterial({
+                        color: COLORS.line, transparent: true, opacity: 0.4, dashSize: 0.2, gapSize: 0.2
+                    });
+                    const geometry = new THREE.BufferGeometry().setFromPoints([sourceNode.position, targetNode.position]);
+                    const line = new THREE.Line(geometry, material);
+                    line.computeLineDistances();
+                    brainGroup.add(line);
+                    lines[`${linkData.source}-${linkData.target}`] = line;
+                });
+            }
+
+            function createFocusBeams() {
+                const focusNode = nodes[dailyFocusNodeId];
+                if (!focusNode) return;
+
+                knowledgeData.links.forEach(link => {
+                    if (link.source === dailyFocusNodeId || link.target === dailyFocusNodeId) {
+                        const targetNodeId = link.source === dailyFocusNodeId ? link.target : link.source;
+                        const targetNode = nodes[targetNodeId];
+                        if (targetNode) {
+                            const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+                            const material = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending });
+                            const pulseMesh = new THREE.Mesh(geometry, material);
+                            brainGroup.add(pulseMesh);
+                            focusPulses.push({ mesh: pulseMesh, startPos: focusNode.position, endPos: targetNode.position, progress: Math.random(), speed: 0.005 + Math.random() * 0.015 });
+                        }
+                    }
+                });
+            }
+
+            createGraph();
+            createFocusBeams();
+
+            const clock = new THREE.Clock();
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+
+                const elapsedTime = clock.getElapsedTime();
+
+                brainGroup.rotation.y += 0.002;
+                brainGroup.position.y = Math.sin(elapsedTime * 1.5) * 0.2;
+
+                if (particlesMesh) {
+                    const posArr = particlesMesh.geometry.attributes.position.array;
+                    const pVec = new THREE.Vector3();
+                    for (let i = 0; i < particleData.length; i++) {
+                        const data = particleData[i];
+                        data.theta += data.speed;
+                        pVec.setFromSphericalCoords(6.15, data.phi, data.theta);
+                        deformToBrain(pVec);
+                        posArr[i * 3] = pVec.x;
+                        posArr[i * 3 + 1] = pVec.y;
+                        posArr[i * 3 + 2] = pVec.z;
+                    }
+                    particlesMesh.geometry.attributes.position.needsUpdate = true;
+                }
+
+                // Animate daily focus node
+                const focusNodeMesh = nodes[dailyFocusNodeId];
+                if (focusNodeMesh) {
+                    const pulse = 1 + 0.2 * Math.sin(elapsedTime * 5);
+                    focusNodeMesh.scale.set(pulse, pulse, pulse);
+                    focusNodeMesh.material.emissiveIntensity = 0.5 + 0.5 * Math.sin(elapsedTime * 5);
+                }
+
+                // Animate focus beams and connections
+                focusPulses.forEach(pulse => {
+                    pulse.progress += pulse.speed;
+                    if (pulse.progress > 1) pulse.progress = 0;
+                    pulse.mesh.position.lerpVectors(pulse.startPos, pulse.endPos, pulse.progress);
+                    pulse.mesh.scale.setScalar(Math.sin(pulse.progress * Math.PI));
+                });
+                Object.values(lines).forEach(line => {
+                    line.material.dashOffset -= 0.02;
+                });
+
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // Initialize 3D model
+        initThreeJS();
+    </script>
+
+<script>
+
+// --- CLERK TO DASHBOARD SYNC LOGIC ---
+function loadGlobalAvatar() {
+    const storedAvatar = localStorage.getItem('userAvatar');
+    const storedFirstName = localStorage.getItem('userFirstName') || 'User';
+    const storedLastName = localStorage.getItem('userLastName') || '';
+    const fullName = (storedFirstName + ' ' + storedLastName).trim();
+
+    const topNavAvatar = document.getElementById('top-nav-avatar');
+    const dropdownName = document.getElementById('dropdown-user-name');
+    const mainProfileAvatar = document.getElementById('main-profile-avatar');
+
+    if (topNavAvatar && storedAvatar) {
+        topNavAvatar.src = storedAvatar;
+    } else if (topNavAvatar && !storedAvatar) {
+        topNavAvatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(fullName) + '&background=a200ff&color=fff';
+    }
+
+    if (mainProfileAvatar && storedAvatar) {
+        mainProfileAvatar.src = storedAvatar;
+    } else if (mainProfileAvatar && !storedAvatar) {
+        mainProfileAvatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(fullName) + '&background=a200ff&color=fff';
+    }
+
+    if (dropdownName) {
+        dropdownName.textContent = fullName;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadGlobalAvatar);
+</script>
+
+    <script>
+        function toggleKnowledgeHub() {
+            const sidebar = document.querySelector('.knowledge-sidebar');
+            if(sidebar) {
+                sidebar.classList.toggle('minimized');
+            }
+        }
+    </script>
+</body>
+</html></content>

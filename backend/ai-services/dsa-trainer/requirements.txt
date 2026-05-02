@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+groq
+pymongo
+pydantic
+python-multipart
+sentence-transformers
+faiss-cpu
+numpy
+scikit-learn

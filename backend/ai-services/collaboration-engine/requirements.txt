@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+socketio
+python-socketio
+aiortc
+numpy
+sentence-transformers
+networkx
+pydantic

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Brain Interface</title>
+    <link rel="stylesheet" href="Dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        #three-canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: var(--bg-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Page Transition Overlay -->
+    <div class="page-transition-overlay" id="page-transition"></div>
+
+    <!-- The 3D Brain visualization will render here -->
+    <div id="three-canvas-container"></div>
+
+    <!-- Top Navigation -->
+    <header class="top-nav">
+        <div class="nav-left">
+            <button class="hamburger-btn" id="hamburger-btn">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <div class="brand">EduNex AI</div>
+        </div>
+        <div class="nav-center">
+            <div class="search-wrapper">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" id="node-search" placeholder="Search neural pathways...">
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="icon-btn"><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+            <div class="user-profile" id="user-profile-trigger">
+                <img src="https://ui-avatars.com/api/?name=User&background=a200ff&color=fff" alt="Profile" id="top-nav-avatar">
+                
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown" id="profile-dropdown">
+                    <div class="dropdown-header">
+                        <div class="user-info">
+                            <span class="user-name" id="dropdown-user-name">User</span>
+                        </div>
+                        <a href="Settings.html" class="edit-profile-link">Edit profile</a>
+                    </div>
+                    <ul class="dropdown-menu">
+                        <li><a href="Dashboard.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg> Dashboard</a></li>
+                        <li><a href="ProgressReport.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 3v18h18"></path><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path></svg> My Progress</a></li>
+                        <li><a href="ProgressReport.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg> League</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg> Bookmarks</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg> Certificates</a></li>
+                        <li><a href="#"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> Spaces</a></li>
+                        <hr>
+                        <li><a href="Settings.html"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg> Billing</a></li>
+                        <li><a href="#" class="logout-link"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Log out</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Sidebar -->
+    <nav class="main-sidebar" id="main-sidebar">
+        <ul class="sidebar-links">
+            <li><a href="#" class="active"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg> Brain Map</a></li>
+            <li><a href="CompletedTasks.html"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg> Tasks</a></li>
+            <li><a href="ProgressReport.html"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 3v18h18"></path><path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"></path></svg> Analytics</a></li>
+            <li><a href="AboutUs.html"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg> About Us</a></li>
+            <li><a href="Settings.html"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> Settings</a></li>
+        </ul>
+    </nav>
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- Right Panel (Calendar/Stats) -->
+    <div class="right-panel">
+        <div class="glass-panel calendar-widget">
+            <div class="calendar-header">
+                <button id="prev-month">&lt;</button>
+                <h3 id="calendar-month-year">Neural Activity</h3>
+                <button id="next-month">&gt;</button>
+            </div>
+            <div class="calendar-weekdays">
+                <span>S</span>
+                <span>M</span>
+                <span>T</span>
+                <span>W</span>
+                <span>T</span>
+                <span>F</span>
+                <span>S</span>
+            </div>
+            <div class="calendar-grid" id="calendar-grid">
+                <!-- JS generated cells -->
+            </div>
+            <div class="streak-info">Current Streak: <strong>12 Days</strong></div>
+        </div>
+    </div>
+
+    <!-- Sidebar listing all elements -->
+    <div class="knowledge-sidebar">
+        <h2>Knowledge Hub</h2>
+        <ul id="knowledge-list">
+            <!-- List items will be dynamically inserted here -->
+        </ul>
+    </div>
+
+    <!-- Tooltip for hovering over neurons -->
+    <div id="tooltip"></div>
+
+    <!-- AI prompt for the daily focus neuron -->
+    <div class="ai-prompt" id="ai-prompt">
+        âš¡ Today's neuron to strengthen: <strong>Graph Theory</strong>
+    </div>
+
+    <!-- Detail panel for clicked neurons -->
+    <div class="detail-panel" id="detail-panel">
+        <div class="detail-panel-header">
+            <h2 id="detail-title">Neuron Details</h2>
+            <span id="detail-status" class="status-indicator">Status</span>
+            <button class="close-btn" id="close-panel-btn">&times;</button>
+        </div>
+        <div class="detail-panel-content" id="detail-content">
+            <!-- Content will be dynamically inserted here -->
+            <h3>Improvement Trend</h3>
+            <p>Your performance has increased by 15% over the last 7 days.</p>
+            <h3>Common Mistakes</h3>
+            <ul>
+                <li>Forgetting to handle disconnected components in graphs.</li>
+                <li>Mixing up BFS and DFS queue/stack usage.</li>
+            </ul>
+            <h3>Suggested Approach</h3>
+            <p>Try visualizing the algorithm's state at each step. Use a whiteboard or an online tool to trace the path and data structures.</p>
+        </div>
+    </div>
+    <script src="brain-map.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: edunex-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: edunex-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.3.1
+    container_name: edunex-mlflow
+    command: mlflow server --host 0.0.0.0 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlruns
+      - ./mlflow.db:/mlflow.db
+
+  postgres:
+    image: postgres:13
+    container_name: edunex-postgres
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  airflow-webserver:
+    image: apache/airflow:2.5.0
+    container_name: edunex-airflow-webserver
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'False'
+    volumes:
+      - ./ai-services/airflow/dags:/opt/airflow/dags
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  airflow-scheduler:
+    image: apache/airflow:2.5.0
+    container_name: edunex-airflow-scheduler
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    volumes:
+      - ./ai-services/airflow/dags:/opt/airflow/dags
+    command: scheduler
+
+  gateway:
+    build: ./gateway
+    container_name: edunex-gateway
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+      - redis
+      - dropout-model
+      - question-engine
+      - skill-gap-analyzer
+      - voice-tutor
+      - optimization-engine
+      - recommendation-engine
+      - explanation-generator
+      - subject-training-engine
+      - skill-navigator
+      - quant-mentor
+      - content-authoring
+      - collaboration-engine
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/edunex
+      - REDIS_URL=redis://redis:6379
+      - AI_DROPOUT_URL=http://dropout-model:8001
+      - AI_QUESTION_URL=http://question-engine:8002
+      - AI_CAREER_URL=http://skill-gap-analyzer:8003
+      - AI_VOICE_URL=http://voice-tutor:8004
+      - AI_OPTIMIZE_URL=http://optimization-engine:8005
+      - AI_RECOMMEND_URL=http://recommendation-engine:8006
+      - AI_EXPLAIN_URL=http://explanation-generator:8007
+      - AI_SUBJECT_TRAINING_URL=http://subject-training-engine:8008
+      - AI_SKILL_NAVIGATOR_URL=http://skill-navigator:8009
+      - AI_QUANT_MENTOR_URL=http://quant-mentor:8010
+      - AI_CONTENT_AUTHORING_URL=http://content-authoring:8011
+      - AI_COLLABORATION_URL=http://collaboration-engine:8012
+      - JWT_SECRET=your_jwt_secret_here_change_in_production
+
+  dropout-model:
+    build: ./ai-services/dropout-model
+    container_name: edunex-dropout
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+
+  question-engine:
+    build: ./ai-services/question-engine
+    container_name: edunex-question
+    restart: always
+    ports:
+      - "8002:8002"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+
+  skill-gap-analyzer:
+    build: ./ai-services/skill-gap-analyzer
+    container_name: edunex-skillgap
+    restart: always
+    ports:
+      - "8003:8003"
+
+  voice-tutor:
+    build: ./ai-services/voice-tutor
+    container_name: edunex-voice
+    restart: always
+    ports:
+      - "8004:8004"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+
+  optimization-engine:
+    build: ./ai-services/optimization-engine
+    container_name: edunex-optimize
+    restart: always
+    ports:
+      - "8005:8005"
+
+  recommendation-engine:
+    build: ./ai-services/recommendation-engine
+    container_name: edunex-recommend
+    restart: always
+    ports:
+      - "8006:8006"
+
+  explanation-generator:
+    build: ./ai-services/explanation-generator
+    container_name: edunex-explain
+    restart: always
+    ports:
+      - "8007:8007"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  subject-training-engine:
+    build: ./ai-services/subject_training_engine
+    container_name: edunex-subject-training
+    restart: always
+    ports:
+      - "8008:8008"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    volumes:
+      - ./ai-services/subject_training_engine/knowledge_index.faiss:/app/knowledge_index.faiss
+      - ./ai-services/subject_training_engine/knowledge_meta.pkl:/app/knowledge_meta.pkl
+
+  skill-navigator:
+    build: ./ai-services/skill-navigator
+    container_name: edunex-skill-navigator
+    restart: always
+    ports:
+      - "8009:8009"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+
+  quant-mentor:
+    build: ./ai-services/quant-mentor
+    container_name: edunex-quant-mentor
+    restart: always
+    ports:
+      - "8010:8010"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+
+  content-authoring:
+    build: ./ai-services/content-authoring
+    container_name: edunex-content-authoring
+    restart: always
+    ports:
+      - "8011:8011"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - HF_TOKEN=${HF_TOKEN}
+    volumes:
+      - ./ai-services/content-authoring/skill_index.faiss:/app/skill_index.faiss
+      - ./ai-services/content-authoring/skills.pkl:/app/skills.pkl
+
+  collaboration-engine:
+    build: ./ai-services/collaboration-engine
+    container_name: edunex-collaboration
+    restart: always
+    ports:
+      - "8012:8012"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+
+  rag-service:
+    build: ./ai-services/rag-service
+    container_name: edunex-rag
+    restart: always
+    ports:
+      - "8013:8013"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+
+volumes:
+  mongo-data:
+  postgres-data:
